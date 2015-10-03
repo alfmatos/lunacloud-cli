@@ -137,18 +137,18 @@ end
 def lunacloud_ve_start(username, password, name)
   uri = URI(ENDPOINT + name + "/" + "start")
   res = put_request(uri, username, password);
+  puts "FINIHSED PUT"
   if(res.code == '202')
-    hash = Hash.from_xml(res.body)
-    pp hash if $verbose
+    puts "Request succeeded."
+    pp res
   elsif (res.code == '304')
-  puts "Cloud server #{name} already running. State not modified."
-  puts "To be sure, check current status with './lunacloud-cli.rb status #{name}'"
-  elsif (res.code == '304')
-  puts "Already stopped. State not modified."
-  puts "To be sure, check current status with './lunacloud-cli.rb status #{name}'"
+    puts "Already stopped. State not modified."
+    puts "Check current status with './lunacloud-cli.rb status #{name}'"
+  elsif (res.code == '404')
+    puts "Server #{name} not found. Plaese check if it exists."
   else
     puts "Invalid response code: #{res.code}"
-  pp res
+    pp res
   end
 end
 
@@ -156,16 +156,16 @@ def lunacloud_ve_stop(username, password, name)
   uri = URI(ENDPOINT + name + "/" + "stop")
   res = put_request(uri, username, password);
   if(res.code == '202')
-    hash = Hash.from_xml(res.body)
-    pp hash if $verbose
+    puts "Request succeeded."
+    pp res
+  elsif (res.code == '304')
+    puts "Already stopped. State not modified."
+    puts "Check current status with './lunacloud-cli.rb status #{name}'"
   elsif (res.code == '404')
     puts "Server #{name} not found. Plaese check if it exists."
-  elsif (res.code == '304')
-  puts "Already stopped. State not modified."
-  puts "To be sure, check current status with './lunacloud-cli.rb status #{name}'"
   else
     puts "Invalid response code: #{res.code}"
-  pp res
+    pp res
   end
 end
 
