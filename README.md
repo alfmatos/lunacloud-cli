@@ -1,5 +1,5 @@
 # lunacloud-cli
-Lunacloud hosting API command line interface.
+Lunacloud hosting [API](https://www.lunacloud.com/docs/tech/compute-restful-api.pdf) command line interface.
 
 *lunacloud-cli* is a very simple tool to automate some processes of starting and stopping instances running on [Lunacloud](http://lunacloud.com).
 
