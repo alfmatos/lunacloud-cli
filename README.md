@@ -20,6 +20,14 @@ The Lunacloud API requires basic HTTP authentication in the form of username and
 
 **Command line:** pass in  `-u username` and `-p password`. If no password is given, the tool will prompt for one (breaking any automated scripts).
 
+## Install
+
+The tool has a few gem requirements: nokogiri, for xml parsing, and highline for user input handling. To install the required dependencies just run the command bellow:
+
+```
+$ gem install nokogiri highline
+```
+
 ## Notes
 
 Some issues encountered:
