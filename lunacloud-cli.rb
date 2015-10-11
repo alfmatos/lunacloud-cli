@@ -248,7 +248,7 @@ cmd = parse_cmd(ARGV)
 
 if(cmd[:action] == "list")
   puts "Retrieving VE list" if($verbose)
-  lunacloud_ve_list(options[:username], options[:auth)
+  lunacloud_ve_list(options[:username], options[:auth])
   exit
 end
 
