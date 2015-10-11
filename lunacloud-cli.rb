@@ -51,9 +51,9 @@ def parse_cmd(args)
   return cmd
 end
 
-def put_request(uri, username, password)
+def put_request(uri, username, token)
   req = Net::HTTP::Put.new(uri.request_uri)
-  req.basic_auth username, password
+  req.basic_auth username, token
   req.content_type = 'application/xml'
 
   puts "Put request at #{uri.to_s}" if $verbose
@@ -81,9 +81,9 @@ def put_request(uri, username, password)
   return res
 end
 
-def get_request(uri, username, password)
+def get_request(uri, username, token)
   req = Net::HTTP::Get.new(uri.request_uri)
-  req.basic_auth username, password
+  req.basic_auth username, token
   req.content_type = 'application/xml'
 
   res = Net::HTTP.start(uri.hostname, uri.port) { |http|
@@ -109,18 +109,18 @@ def get_request(uri, username, password)
   return res
 end
 
-def lunacloud_ve_list(username, password)
+def lunacloud_ve_list(username, token)
   uri = URI(ENDPOINT)
-  res = get_request(uri, username, password);
+  res = get_request(uri, username, token);
   if(res.code == '200')
     hash = Hash.from_xml(res.body)
     hash[:ve_list][:ve_info].each { |obj| puts "#{obj[:name]} is #{obj[:state]}" }
   end
 end
 
-def lunacloud_ve_status(username, password, name)
+def lunacloud_ve_status(username, token, name)
   uri = URI(ENDPOINT + name)
-  res = get_request(uri, username, password);
+  res = get_request(uri, username, token);
   if(res.code == '200')
     hash = Hash.from_xml(res.body)
     pp hash if $verbose
@@ -134,9 +134,9 @@ def lunacloud_ve_status(username, password, name)
   end
 end
 
-def lunacloud_ve_start(username, password, name)
+def lunacloud_ve_start(username, token, name)
   uri = URI(ENDPOINT + name + "/" + "start")
-  res = put_request(uri, username, password);
+  res = put_request(uri, username, token);
   puts "FINIHSED PUT"
   if(res.code == '202')
     puts "Request succeeded."
@@ -152,9 +152,9 @@ def lunacloud_ve_start(username, password, name)
   end
 end
 
-def lunacloud_ve_stop(username, password, name)
+def lunacloud_ve_stop(username, token, name)
   uri = URI(ENDPOINT + name + "/" + "stop")
-  res = put_request(uri, username, password);
+  res = put_request(uri, username, token);
   if(res.code == '202')
     puts "Request succeeded."
     pp res
@@ -194,6 +194,7 @@ options = {}
 
 options[:username] = ENV['LUNACLOUD_USER']
 options[:password] = ENV['LUNACLOUD_PASSWORD']
+options[:token] = ENV['LUNACLOUD_TOKEN']
 
 OptionParser.new do |opts|
   opts.banner = "Usage: lunacloud-cli.rb cmd [options]"
@@ -217,6 +218,10 @@ OptionParser.new do |opts|
     options[:password] = p
   end
 
+  opts.on("-t", "--token TOKEN", "Token") do |t|
+    options[:token] = t
+  end
+
   opts.on("status SERVER", "show status for server SERVER") do |s|
     options[:status] = true
     options[:server] = s
@@ -227,8 +232,14 @@ if(options[:username] == nil)
   fail_options("Use lunacloud-cli -h for help", "username", "Username required")
 end
 
-if(options[:password] == nil)
-  options[:password] = get_password()
+if(options[:token] != nil)
+  options[:auth] = options[:token]
+else
+  options[:auth] = options[:password]
+end
+
+if(options[:auth] == nil)
+  options[:auth] = get_password()
 end
 
 $verbose = true if options[:verbose]
@@ -237,25 +248,25 @@ cmd = parse_cmd(ARGV)
 
 if(cmd[:action] == "list")
   puts "Retrieving VE list" if($verbose)
-  lunacloud_ve_list(options[:username], options[:password])
+  lunacloud_ve_list(options[:username], options[:auth)
   exit
 end
 
 if(cmd[:action] == "status")
   puts "Retrieving status => #{cmd[:server]}" if($verbose)
-  lunacloud_ve_status(options[:username], options[:password], cmd[:server])
+  lunacloud_ve_status(options[:username], options[:auth], cmd[:server])
   exit
 end
 
 if(cmd[:action] == "start")
   puts "Starting server => #{cmd[:server]}" if($verbose)
-  lunacloud_ve_start(options[:username], options[:password], cmd[:server])
+  lunacloud_ve_start(options[:username], options[:auth], cmd[:server])
   exit
 end
 
 if(cmd[:action] == "stop")
   puts "Stopping server => #{cmd[:server]}" if($verbose)
-  lunacloud_ve_stop(options[:username], options[:password], cmd[:server])
+  lunacloud_ve_stop(options[:username], options[:auth], cmd[:server])
   exit
 end
 
