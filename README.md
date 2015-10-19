@@ -14,9 +14,18 @@ $ lunacloud-cli stop server_name # Stops server_name
 
 ## Authentication
 
-The Lunacloud API requires HTTP authentication in the form of a *API Token*.
+The Lunacloud API requires HTTP authentication in the form of an *API Token*.
 
-The Token is available on your Lunacloud account, in the control panel under the menu `<your email>` >> `My Settings` >> `API (tab)`. There is a string "Basic c3VwcG9ydEBtZXRyaWZseS5jb206cmlja3JvbGxlZDgy". Just copy the token and use it as an option or an enviroment variable:
+The Token is available on your Lunacloud account, in the control panel under:
+
+`<your email>` >> `My Settings` >> `API (tab)`.
+
+There you'll find a string like:
+```
+"Basic c3VwcG9ydEBtZXRyaWZseS5jb206cmlja3JvbGxlZDgy"
+```
+
+Just copy the (second) token part and use it as an option or an enviroment variable:
 
 ```
  $ export LUNACLOUD_TOKEN="c3VwcG9ydEBtZXRyaWZseS5jb206cmlja3JvbGxlZDgy"
