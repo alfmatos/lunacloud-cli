@@ -17,6 +17,10 @@ def get_password(prompt="Enter Password")
   ask(prompt) {|q| q.echo = false}
 end
 
+def empty_or_nil_string(str)
+  return str.to_s.strip.length == 0
+end
+
 def parse_cmd(args)
   cmd = {}
 
@@ -53,8 +57,15 @@ end
 
 def put_request(uri, username, token)
   req = Net::HTTP::Put.new(uri.request_uri)
-  req.basic_auth username, token
   req.content_type = 'application/xml'
+
+  # Authentication credentials
+  if(empty_or_nil_string(username))
+    req['Authorization'] = "Basic #{token}"
+  else
+    # fallback to username and password
+    req.basic_auth username, token
+  end
 
   puts "Put request at #{uri.to_s}" if $verbose
 
@@ -83,8 +94,15 @@ end
 
 def get_request(uri, username, token)
   req = Net::HTTP::Get.new(uri.request_uri)
-  req.basic_auth username, token
   req.content_type = 'application/xml'
+
+  # Authentication credentials
+  if(empty_or_nil_string(username))
+    req['Authorization'] = "Basic #{token}"
+  else
+    # fallback to username and password
+    req.basic_auth username, token
+  end
 
   res = Net::HTTP.start(uri.hostname, uri.port) { |http|
     http.request(req)
@@ -112,15 +130,22 @@ end
 def lunacloud_ve_list(username, token)
   uri = URI(ENDPOINT)
   res = get_request(uri, username, token);
+
   if(res.code == '200')
     hash = Hash.from_xml(res.body)
     hash[:ve_list][:ve_info].each { |obj| puts "#{obj[:name]} is #{obj[:state]}" }
+  elsif (res.code == '401')
+    puts "#{res.message}: #{res.body.strip}"
+  elsif
+    puts "Invalid response code: #{res.code}"
+    pp res
   end
 end
 
 def lunacloud_ve_status(username, token, name)
   uri = URI(ENDPOINT + name)
   res = get_request(uri, username, token);
+
   if(res.code == '200')
     hash = Hash.from_xml(res.body)
     pp hash if $verbose
@@ -130,17 +155,19 @@ def lunacloud_ve_status(username, token, name)
     puts "IPv6: #{server[:network][:public_ipv6][:address]}"
     puts "Spec: CPU=>#{server[:cpu][:number]}@#{server[:cpu][:power]}Mhz, RAM=>#{server[:ram_size]}Mb, DISK=>#{server[:ve_disk][:"size"]}GiB"
   else
+    puts "Invalid response code: #{res.code}"
     pp res
   end
+
+  pp res if $verbose
 end
 
 def lunacloud_ve_start(username, token, name)
   uri = URI(ENDPOINT + name + "/" + "start")
   res = put_request(uri, username, token);
-  puts "FINIHSED PUT"
+
   if(res.code == '202')
-    puts "Request succeeded."
-    pp res
+    puts "Start Successful."
   elsif (res.code == '304')
     puts "Already stopped. State not modified."
     puts "Check current status with './lunacloud-cli.rb status #{name}'"
@@ -155,9 +182,9 @@ end
 def lunacloud_ve_stop(username, token, name)
   uri = URI(ENDPOINT + name + "/" + "stop")
   res = put_request(uri, username, token);
+
   if(res.code == '202')
-    puts "Request succeeded."
-    pp res
+    puts "Stop Successful."
   elsif (res.code == '304')
     puts "Already stopped. State not modified."
     puts "Check current status with './lunacloud-cli.rb status #{name}'"
@@ -165,8 +192,10 @@ def lunacloud_ve_stop(username, token, name)
     puts "Server #{name} not found. Plaese check if it exists."
   else
     puts "Invalid response code: #{res.code}"
-    pp res
   end
+
+  pp res if $verbose
+
 end
 
 def fail_options(banner, option, message, cmd = false)
@@ -228,18 +257,18 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-if(options[:username] == nil)
-  fail_options("Use lunacloud-cli -h for help", "username", "Username required")
-end
+if(empty_or_nil_string(options[:token]))
+  if(options[:username] == nil)
+    fail_options("Use lunacloud-cli -h for help", "username", "Username required")
+  end
 
-if(options[:token] != nil)
-  options[:auth] = options[:token]
-else
   options[:auth] = options[:password]
-end
 
-if(options[:auth] == nil)
-  options[:auth] = get_password()
+  if(options[:auth] == nil)
+    options[:auth] = get_password()
+  end
+else
+  options[:auth] = options[:token]
 end
 
 $verbose = true if options[:verbose]

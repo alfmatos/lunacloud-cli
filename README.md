@@ -14,7 +14,22 @@ $ lunacloud-cli stop server_name # Stops server_name
 
 ## Authentication
 
-The Lunacloud API requires basic HTTP authentication in the form of username and password. The command line tool accepts environment variables or runtime arguments:
+The Lunacloud API requires HTTP authentication in the form of a *API Token*.
+
+The Token is available on your Lunacloud account, in the control panel under the menu `<your email>` >> `My Settings` >> `API (tab)`. There is a string "Basic c3VwcG9ydEBtZXRyaWZseS5jb206cmlja3JvbGxlZDgy". Just copy the token and use it as an option or an enviroment variable:
+
+```
+ $ export LUNACLOUD_TOKEN="c3VwcG9ydEBtZXRyaWZseS5jb206cmlja3JvbGxlZDgy"
+ $ lunacloud-cli [...]
+```
+
+Alternatively, pass it in as an argument (list example bellow):
+
+```
+ $ luacloud-cli -t "c3VwcG9ydEBtZXRyaWZseS5jb206cmlja3JvbGxlZDgy" list
+```
+
+Up until recently username and password were allowed. You can try using this as a fallback auhtentication mechanism. The command line tool accepts environment variables or runtime arguments:
 
 **Environment variables:** set `LUNACLOUD_USERNAME` and  `LUNACLOUD_PASSWORD` with your credentials, and the script will pick it up.
 
@@ -32,10 +47,8 @@ $ gem install nokogiri highline
 
 Some issues encountered:
 
-* https doesn't seem to be working
+* https doesn't seem to be working at the moment
 * API calls only work with master accounts and not delegates
 * Still no support for creating and deleting instances from *lunacloud-cli*
 
 *This script is in no way affiliated with Lunacloud. It is not an official tool, nor is it developed by anyone with affiliation or relationship with Lunacloud.*
-
-
